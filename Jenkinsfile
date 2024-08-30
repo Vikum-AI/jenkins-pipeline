@@ -79,7 +79,7 @@ pipeline {
 def sendEmail(stageName) {
     def buildStatus = currentBuild.result ?: 'SUCCESS'
     def log = currentBuild.rawBuild.getLog(100).join("\n")
-    def recipient = env.GIT_AUTHOR_EMAIL ?: env.GIT_COMMITTER_EMAIL ?: 'default-email@example.com' // Fallback email
+    def recipient = env.GIT_AUTHOR_EMAIL ?: env.GIT_COMMITTER_EMAIL ?: 'vikumdabare@gmail.com' // Fallback email
 
     emailext (
         to: "${recipient}",
