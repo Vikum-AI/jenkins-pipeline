@@ -17,14 +17,32 @@ pipeline {
         
         stage('Test') {
             steps {
-                echo "Running unit tests"
-                echo "Running integration tests"
+                script {
+                    try {
+                        echo "Running unit tests"
+                        echo "Running integration tests"
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    } finally {
+                        sendEmail('Test')
+                    }
+                }
             }
         }
         
         stage('Code Quality Check') {
             steps {
-                echo "Check the quality of the code"
+                script {
+                    try {
+                        echo "Check the quality of the code"
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    } finally {
+                        sendEmail('Code Quality Check')
+                    }
+                }
             }
         }
         
@@ -43,8 +61,33 @@ pipeline {
         
         stage('Deploy to Production') {
             steps {
-                echo "Deploy the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
+                script {
+                    try {
+                        echo "Deploy the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    } finally {
+                        sendEmail('Deploy to Production')
+                    }
+                }
             }
         }
     }
+}
+
+def sendEmail(stageName) {
+    def buildStatus = currentBuild.result ?: 'SUCCESS'
+    def log = currentBuild.rawBuild.getLog(100).join("\n")
+    def recipient = env.GIT_AUTHOR_EMAIL ?: env.GIT_COMMITTER_EMAIL ?: 'default-email@example.com' // Fallback email
+
+    emailext (
+        to: "${recipient}",
+        subject: "Jenkins Pipeline: ${stageName} Stage - ${buildStatus}",
+        body: """<p>${stageName} Stage completed with status: ${buildStatus}</p>
+                <p>Logs are attached.</p>""",
+        attachLog: true,
+        mimeType: 'text/html',
+        compressLog: true
+    )
 }
