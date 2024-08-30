@@ -3,59 +3,73 @@ pipeline {
     
     environment {
         DIRECTORY_PATH = '/path/to/code/directory'
-        TESTING_ENVIRONMENT = 'ProdTest'
-        PRODUCTION_ENVIRONMENT = 'Vikum_Prod'
+        TESTING_ENVIRONMENT = 'StagingEnv'
+        PRODUCTION_ENVIRONMENT = 'ProductionEnv'
     }
     
     stages {
         stage('Build') {
             steps {
-                echo "Fetch the source code from the directory path specified by the environment variable: ${env.DIRECTORY_PATH}"
-                echo "Compile the code and generate any necessary artifacts"
+                echo "Fetching the source code from the directory path specified by the environment variable: ${env.DIRECTORY_PATH}"
+                echo "Using Maven to compile the code and generate artifacts"
             }
         }
         
-        stage('Test') {
+        stage('Unit and Integration Tests') {
             steps {
                 script {
                     try {
-                        echo "Running unit tests"
-                        echo "Running integration tests"
+                        echo "Running unit tests using JUnit"
+                        echo "Running integration tests using JUnit"
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         throw e
                     } finally {
-                        sendEmail('Test')
+                        sendEmail('Unit and Integration Tests')
                     }
                 }
             }
         }
         
-        stage('Code Quality Check') {
+        stage('Code Analysis') {
             steps {
                 script {
                     try {
-                        echo "Check the quality of the code"
+                        echo "Analyzing code quality using SonarQube"
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         throw e
                     } finally {
-                        sendEmail('Code Quality Check')
+                        sendEmail('Code Analysis')
                     }
                 }
             }
         }
         
-        stage('Deploy') {
+        stage('Security Scan') {
             steps {
-                echo "Deploy the application to a testing environment specified by the environment variable: ${env.TESTING_ENVIRONMENT}"
+                script {
+                    try {
+                        echo "Performing security scan using OWASP ZAP"
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    } finally {
+                        sendEmail('Security Scan')
+                    }
+                }
             }
         }
         
-        stage('Approval') {
+        stage('Deploy to Staging') {
             steps {
-                echo "Waiting for manual approval..."
-                sleep 10
+                echo "Deploying the application to the staging environment: ${env.TESTING_ENVIRONMENT}"
+            }
+        }
+        
+        stage('Integration Tests on Staging') {
+            steps {
+                echo "Running integration tests on the staging environment using JUnit"
             }
         }
         
@@ -63,7 +77,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        echo "Deploy the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
+                        echo "Deploying the application to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         throw e
