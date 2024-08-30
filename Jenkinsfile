@@ -79,10 +79,13 @@ pipeline {
 def sendEmail(stageName) {
     def buildStatus = currentBuild.result ?: 'SUCCESS'
     def log = currentBuild.rawBuild.getLog(100).join("\n")
-    def recipient = env.GIT_AUTHOR_EMAIL ?: env.GIT_COMMITTER_EMAIL ?: 'vikumdabare@gmail.com' // Fallback email
+    def authorEmail = sh(
+                        script: "git log -1 --pretty=format:'%ae'",
+                        returnStdout: true
+                    ).trim()
 
     emailext (
-        to: "${recipient}",
+        to: "${authorEmail}",
         subject: "Jenkins Pipeline: ${stageName} Stage - ${buildStatus}",
         body: """<p>${stageName} Stage completed with status: ${buildStatus}</p>
                 <p>Logs are attached.</p>""",
