@@ -79,10 +79,7 @@ pipeline {
 def sendEmail(stageName) {
     def buildStatus = currentBuild.result ?: 'SUCCESS'
     def log = currentBuild.rawBuild.getLog(100).join("\n")
-    def authorEmail = sh(
-                        script: "git log -1 --pretty=format:'%ae'",
-                        returnStdout: true
-                    ).trim()
+    def authorEmail = "vikumdabare@gmail.com"
 
     emailext (
         to: "${authorEmail}",
